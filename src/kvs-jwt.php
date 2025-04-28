@@ -68,7 +68,7 @@ function jwt_decode_header($header)
     }
     if ($header['typ'] !== 'JWT')
     {
-        throw new JwtExcpetion('invalid token type');
+        throw new JwtException('invalid token type');
     }
     $alg = $header['alg'];
     return $alg;
@@ -114,8 +114,7 @@ function jwt_verify_and_decode(
     $token,
     $type,
     $key,
-    $leeway=DEFAULT_LEEWAY,
-    $timestamp = null
+    $leeway=DEFAULT_LEEWAY
 ) {
     $parts = explode('.', $token, 4);
     if (count($parts) != 3)
@@ -134,7 +133,22 @@ function jwt_verify_and_decode(
 
     $payload = jwt_decode_payload($payload);
 
-    // ToDo: check nbf, iat, exp
+    $now = time();
+    
+    // check if token is already expired
+    if ((array_key_exists('exp', $payload)) && (($payload['exp'] + $leeway) < $now)) {
+        throw new JwtException('expired');
+    }
+
+    // check if token is not valid yet
+    if (array_key_exists('nbf', $payload)) {
+        if (($payload['nbf'] - $leeway) > $now) {
+            throw new JwtException('not valid yet');
+        }
+    }
+    else if ((array_key_exists('iat', $payload)) && (($payload['iat'] - $leeway) > $now)) {
+        throw new JwtException('not valid yet');
+    }
 
     return $payload;
 }

@@ -57,6 +57,19 @@ function kvs_admin_v1_process_named_bucket($bucket_name) {
                 "max_entries" => $bucket->max_entries
             ));
             break;
+        case 'DELETE':
+            $conn = kvs_db_open();
+            $bucket = kvs_bucket_by_name($conn, $bucket_name);
+            if ($bucket) {
+                kvs_remove_bucket($conn, $bucket_name);
+            }
+
+            http_response_code(200);
+            header('Content-Type: application/json');
+            echo json_encode(array(
+                "name" => $bucket->name
+            ));
+            return;
         default:
             http_response_code(405);
             break;

@@ -8,7 +8,7 @@ const DB_PASSWORD = 'secret';
 const DB_DATABASE = 'db';
 const DB_TABLE_PREFIX = 'kvs_';
 
-const ADMIN_EMAIL = 'user@example.org';
+const ADMIN_PASSWORD = 'secret';
 
 const JWT_SECRET = 'jwt-secret';
 

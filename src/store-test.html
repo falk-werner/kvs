@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>KVS</title>
+    <script type="text/javascript">
+        function startup() {
+            document.querySelector("#update").addEventListener("click", update_entries);
+            document.querySelector("#clear").addEventListener("click", clear_entries);
+            document.querySelector("#set_value").addEventListener("click", set_entry);
+        }
+
+        async function update_entries() {
+            const tbody = document.querySelector("#entries");
+            tbody.innerHTML = "";
+
+            const bucket_name = document.querySelector("#bucket_name").value;
+            try {
+                const response = await fetch(`/store/v1/bucket/${bucket_name}`);
+                const entries = await response.json();
+
+                for(let [key, value] of Object.entries(entries)) {
+                    const row = document.createElement("tr");
+                    tbody.appendChild(row);
+
+                    const td_key = document.createComment("td");
+                    row.appendChild(td_key);
+                    td_key.textContent = key;
+
+                    const td_value = document.createComment("td");
+                    row.appendChild(td_value);
+                    td_value.textContent = value;
+
+                    const td_actions = document.createComment("td");
+                    row.appendChild(td_actions);
+                    const remove = document.createElement("input");
+                    td_actions.appendChild(remove);
+                    remove.type = "button";
+                    remove.value = "Remove";
+                    remove.addEventListener("click", () => { remove_entry(key); });
+                }
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function clear_entries() {
+            const bucket_name = document.querySelector("#bucket_name").value;
+            try {
+                await fetch(`/store/v1/bucket/${bucket_name}`, {method: "DELETE"});
+                await update_entries();
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+
+        async function set_entry() {
+            const bucket_name = document.querySelector("#bucket_name").value;
+            const key = document.querySelector("#key").value;
+            const value = document.querySelector("#value").value;
+            try {
+                await fetch(`/store/v1/bucket/${bucket_name}/entry/${key}`, {method: "POST", body: value});
+                await update_entries();
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+
+        async function remove_entry(key) {
+            const bucket_name = document.querySelector("#bucket_name").value;
+
+            try {
+                await fetch(`/store/v1/bucket/${bucket_name}/entry/${key}`, {method: "DELETE"});
+                await update_entries();
+            }
+            catch (err) {
+                console.log(err);
+            }
+
+        }
+    </script>
+</head>
+<body onload="startup()">
+    <h1>KVS - Store</h1>
+    <p>
+        <label>Bucket: </label><input type="text" id="bucket_name"/>
+    </p>
+
+    <h2>Add / Change Entry</h2>
+    <table>
+        <tr>
+            <td>Key:</td>
+            <td><input type="text" id="key" value="key"/></td>
+        </tr>
+        <tr>
+            <td>Value:</td>
+            <td><input type="text" id="value" value="value"/></td>
+        </tr>
+        <tr>
+            <td></td>
+            <td><input type="button" id="set_value" value="Submit"/></td>
+        </tr>
+    </table>
+    
+    <h2>Entries</h2>
+    <p>
+        <input type="button" id="update" value="Update"/>
+        <input type="button" id="clear" value="Clear"/>
+    </p>
+    <table>
+        <thead>
+            <tr>
+                <th>Key</th>
+                <th>Value</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="entries"></tbody>
+    </table>
+
+</body>
+</html>

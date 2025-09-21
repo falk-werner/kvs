@@ -15,6 +15,24 @@ function kvs_admin_v1_process_bucket() {
             header('Content-Type: application/json');
             echo json_encode($buckets);
             break;
+        case 'PUT':
+            // fall-through
+        case 'POST':
+            $conn = kvs_db_open();
+            $bucket = kvs_create_bucket($conn);
+            if ($bucket) {
+                $response = array(
+                    "name" => $bucket
+                );
+                http_response_code(200);
+                header('Content-Type: application/json');
+                echo json_encode($response);
+            }
+            else {
+                http_response_code(500);
+            }
+
+            break;
         default:
             http_response_code(405);
             break;

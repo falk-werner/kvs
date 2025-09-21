@@ -1,0 +1,63 @@
+openapi: 3.1.1
+info:
+  title: kvs-store-v1
+  summary: A key value store.
+  version: 0.1.0
+
+paths:
+  /bucket/{bucket}:
+    get:
+      summary: Returns all keys and values of the bucket
+      parameters:
+        - name: bucket
+          in: path
+          description: ID of the bucket
+          required: true
+  /bucket/{bucket}/keys:
+    get:
+      summary: Returns all keys of the bucket
+      parameters:
+        - name: bucket
+          in: path
+          description: ID of the bucket
+          required: true
+  /bucket/{bucket}/entry/{key}:
+    get:
+      summary: Returns the value of the entry
+      parameters:
+        - name: bucket
+          in: path
+          description: ID of the bucket
+          required: true
+        - name: key
+          in: path
+          description: ID of the key
+          required: true
+    post:
+      summary: Sets the value of the entry
+      parameters:
+        - name: bucket
+          in: path
+          description: ID of the bucket
+          required: true
+        - name: key
+          in: path
+          description: ID of the key
+          required: true
+      requestBody:
+        content:
+          text/plain:
+            schema:
+              type: string
+    delete:
+      summary: Removes the entry from the bucket
+      parameters:
+        - name: bucket
+          in: path
+          description: ID of the bucket
+          required: true
+        - name: key
+          in: path
+          description: ID of the key
+          required: true
+

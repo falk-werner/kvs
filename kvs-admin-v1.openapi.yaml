@@ -1,0 +1,28 @@
+openapi: 3.1.1
+info:
+  title: kvs-admin-v1
+  summary: A key value store admin API.
+  version: 0.1.0
+
+paths:
+  /bucket:
+    get:
+      summary: Returns a list of all buckets
+    post:
+      summary: Creates a new bucket
+      requestBody:
+        content:
+          application/json: {}
+  /bucket/{bucket}:
+    get:
+      summary: Returns meta information about the bucket
+    delete:
+      summary: Removed the bucket
+  /bucket/{bucket}/token:
+    post:
+      summary: Create a new access token for the bucket
+      requestBody:
+        content:
+          application/json: {}
+    delete:
+      summary: Revoke all access tokens for the bucket.

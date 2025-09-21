@@ -14,7 +14,7 @@ const TABLE_ENTRY  = config\DB_TABLE_PREFIX . 'entry';
 function drop_table($conn, $table) {
   $result = $conn->query('DROP TABLE IF EXISTS `' . $table . '`');
   if ($result === false) {
-    die('failed to create database: failed to drop table \"' . $table . '\"');
+    die('failed to create database: failed to drop table \"' . $table . '\": ' . $conn->error);
   }
 }
 
@@ -25,14 +25,14 @@ function create_table_meta($conn) {
     schema_version INT UNSIGNED
   )');
   if ($result === false) {
-    die('failed to create database: failed to create meta information table');
+    die('failed to create database: failed to create meta information table: ' . $conn->error);
   }
 
   $result = $conn->query('INSERT INTO `' . TABLE_META . '` 
     (schema_version) VALUES 
     (' . SCHEMA_VERSION . ')');
   if ($result === false) {
-    die('failed to create database: failed to initialize meta information');
+    die('failed to create database: failed to initialize meta information: ' . $conn->error);
   }
 }
 
@@ -46,7 +46,7 @@ function create_table_bucket($conn) {
     PRIMARY KEY (bucket_id)
   )');
   if ($result === false) {
-    die('failed to create database: failed to create bucket table');
+    die('failed to create database: failed to create bucket table: ' . $conn->error);
   }
 
   // ToDo: Remove me
@@ -54,7 +54,7 @@ function create_table_bucket($conn) {
   $result = $conn->query('INSERT INTO `' . TABLE_BUCKET . '`
     (name, max_entries) VALUES (\'foo\', 100)');
   if ($result === false) {
-    die('failed to create database: failed to initialize bucket table' . $conn->error);
+    die('failed to create database: failed to initialize bucket table: ' . $conn->error);
   }
 }
 
@@ -69,7 +69,7 @@ function create_table_entry($conn) {
     PRIMARY KEY (entry_id)
   )');
   if ($result === false) {
-    die('failed to create database: failed to create entry table');
+    die('failed to create database: failed to create entry table: ' . $conn->error);
   }
 }
 
@@ -117,24 +117,38 @@ function kvs_db_check() {
   }
 }
 
-
-
 function kvs_bucket_by_name($conn, $name) {
-  $result = $conn->query('SELECT bucket_id, name, max_entries FROM `' . TABLE_BUCKET . '`');
-  if ($result === false) {
+  $stmt = $conn->prepare('SELECT bucket_id, name, max_entries FROM `' . TABLE_BUCKET . '` WHERE name=?');
+  $stmt->bind_param("s", $name);
+  $result = $stmt->execute();
+  if (!$result) {
     return false;
   }
 
-  $row = mysqli_fetch_row($result);
-  if (!$row) {
+  $stmt->bind_result($bucket_id, $bucket_name, $max_entries);
+  $result = $stmt->fetch();
+  if (!$result) {
     return false;
   }
-
-  $bucket_id = $row[0];
-  $bucket_name = $row[1];
-  $max_entries = $row[2];
 
   return new Bucket($bucket_id, $bucket_name, $max_entries);
+}
+
+function kvs_list_buckets($conn) {
+  $buckets = array();
+  $stmt = $conn->prepare('SELECT name FROM `' . TABLE_BUCKET . '`');
+  $result = $stmt->execute();
+  if (!$result) {
+    return $buckets;
+  }
+
+  $stmt->bind_result($bucket_name);
+
+  while ($stmt->fetch()) {
+    array_push($buckets, $bucket_name);
+  }
+
+  return $buckets;
 }
 
 

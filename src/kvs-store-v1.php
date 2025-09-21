@@ -2,7 +2,7 @@
 
 define('KVS_STORE_V1_PREFIX', '/store/v1/');
 
-function kvs_store_v1_process_bucket($bucket) {
+function kvs_store_v1_process_bucket($bucket_name) {
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
         case 'GET':
@@ -13,6 +13,17 @@ function kvs_store_v1_process_bucket($bucket) {
             echo "Key3: A\n";
             foreach (getallheaders() as $name => $value) {
                 echo "$name: $value\n";
+            }
+
+            $conn = kvs_db_open();
+            $bucket = kvs_bucket_by_name($conn, $bucket_name);
+            if ($bucket !== false) {
+                echo "ID: " . $bucket->id . "\n";
+                echo "NAME: " . $bucket->name . "\n";
+                echo "MAX_ENTRIES: " . $bucket->max_entries . "\n";
+            }
+            else {
+                echo "bucket not found\n";
             }
             break;
         default:
@@ -69,7 +80,7 @@ function kvs_store_v1_process() {
         $bucket = $matches[1];
         kvs_store_v1_process_keys($bucket);
     }
-    else if (preg_match('/^\/store\/v1\/bucket\/([^\/]+)\/value\/([a-zA-Z0-9-_\.]+)$/')) {
+    else if (preg_match('/^\/store\/v1\/bucket\/([^\/]+)\/key\/([a-zA-Z0-9-_\.]+)$/')) {
         $bucket = $match[1];
         $key = $match[2];
         kvs_store_v1_process_value($bucket, $key);

@@ -6,23 +6,30 @@
 
         function startup() {
             document.querySelector("#list_buckets").addEventListener("click", list_buckets);
+            document.querySelector("#create_bucket").addEventListener("click", create_bucket);
         }
 
         async function list_buckets() {
-            const ul = document.querySelector("#buckets");
-            ul.textContent = "";
+            const tbody = document.querySelector("#buckets");
+            tbody.textContent = "";
 
             try {
-                const token = document.querySelector("#admin_secret").value;
+                const token = document.querySelector("#token").value;
                 const response = await fetch('/admin/v1/bucket', {
                     headers: new Headers({"Authorization": `Bearer ${token}`})
                 });
 
                 const bucket_names = await response.json();
                 for(let name of bucket_names) {
-                    const li = document.createElement("li");
-                    li.textContent = name;
-                    ul.appendChild(li);
+                    const row = document.createElement("tr");
+                    tbody.appendChild(row);
+
+                    const td_name = document.createElement("td");
+                    td_name.textContent = name;
+                    row.appendChild(td_name);
+
+                    const td_actions = document.createElement("td");
+                    row.appendChild(td_actions);
                 } 
             }
             catch (err) {
@@ -30,16 +37,37 @@
             }
         }
 
+        async function create_bucket() {
+
+                const token = document.querySelector("#token").value;
+                const response = await fetch('/admin/v1/bucket', {
+                    method: "POST",
+                    headers: new Headers({"Authorization": `Bearer ${token}`})
+                });
+
+                console.log(await response.json());
+        }
+
     </script>
 </head>
 <body onload="startup()">
     <h1>KVS - Admin</h1>
     <p>
-        <label>Admin Secret</label><input type="password" id="admin_secret" />
+        <label>API Token: </label><input type="password" id="token" />
     </p>
     <p>
-        <input type="button" id="list_buckets" value="List Buckets" />
-        <ul id="buckets"></ul>
+        <input type="button" id="create_bucket" value="New"/>
+        <input type="button" id="list_buckets" value="Update" />
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="buckets">
+            </tbody>
+        </table>
     </p>
 </body>
 </html>

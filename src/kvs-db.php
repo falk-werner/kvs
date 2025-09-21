@@ -1,6 +1,7 @@
 <?php
 
 use KeyValueStore\Config as config;
+use function KeyValueStore\Bucket\create_bucket_name;
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
@@ -151,5 +152,23 @@ function kvs_list_buckets($conn) {
   return $buckets;
 }
 
+function kvs_create_bucket($conn) {
+  $bucket_name = create_bucket_name($conn);
+  $max_entries = 100;
+
+  while (kvs_bucket_by_name($conn, $bucket_name)) {
+    $bucket_name = create_bucket_name($conn);
+  }
+
+
+  $stmt = $conn->prepare('INSERT INTO `' . TABLE_BUCKET . '` (name, max_entries) VALUES (?, ?)');
+  $stmt->bind_param("si", $bucket_name, $max_entries);
+  $result = $stmt->execute();
+  if (!$result) {
+    return false;
+  }
+
+  return $bucket_name;
+}
 
 ?>

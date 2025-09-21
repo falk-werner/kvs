@@ -39,6 +39,30 @@ function kvs_admin_v1_process_bucket() {
     }
 }
 
+function kvs_admin_v1_process_named_bucket($bucket_name) {
+    $method = $_SERVER['REQUEST_METHOD'];
+    switch ($method) {
+        case 'GET':
+            $conn = kvs_db_open();
+            $bucket = kvs_bucket_by_name($conn, $bucket_name);
+            if (!$bucket) {
+                http_response_code(404);
+                return;
+            }
+
+            http_response_code(200);
+            header('Content-Type: application/json');
+            echo json_encode(array(
+                "name" => $bucket->name,
+                "max_entries" => $bucket->max_entries
+            ));
+            break;
+        default:
+            http_response_code(405);
+            break;
+    }
+}
+
 function kvs_admin_v1_process() {
     $headers = getallheaders();
     $auth = http_get_header("authorization");
@@ -57,7 +81,8 @@ function kvs_admin_v1_process() {
         kvs_admin_v1_process_bucket();
     }
     else if (preg_match("/^bucket\/([^\/]+)$/", $path, $matches)) {
-        $bucket = matches[1];
+        $bucket_name = $matches[1];
+        kvs_admin_v1_process_named_bucket($bucket_name);
     }
 
 }

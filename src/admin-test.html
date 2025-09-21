@@ -9,6 +9,21 @@
             document.querySelector("#create_bucket").addEventListener("click", create_bucket);
         }
 
+        async function get_bucket_info(bucket_name) {
+            try {
+                const token = document.querySelector("#token").value;
+                const response = await fetch(`/admin/v1/bucket/${bucket_name}`, {
+                    headers: new Headers({"Authorization": `Bearer ${token}`})
+                });
+                return await response.json();
+            }
+            catch (err) {
+                console.error(err);
+                return {"name": name, "max_entries": "n.a."};
+            }
+
+        }
+
         async function list_buckets() {
             const tbody = document.querySelector("#buckets");
             tbody.textContent = "";
@@ -21,12 +36,18 @@
 
                 const bucket_names = await response.json();
                 for(let name of bucket_names) {
+                    const info = await get_bucket_info(name);
+
                     const row = document.createElement("tr");
                     tbody.appendChild(row);
 
                     const td_name = document.createElement("td");
                     td_name.textContent = name;
                     row.appendChild(td_name);
+
+                    const td_max_entries = document.createElement("td");
+                    td_max_entries.textContent = info.max_entries;
+                    row.appendChild(td_max_entries);
 
                     const td_actions = document.createElement("td");
                     row.appendChild(td_actions);
@@ -62,6 +83,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Max. Entries</th>
                     <th>Actions</th>
                 </tr>
             </thead>

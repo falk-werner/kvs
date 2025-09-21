@@ -18,11 +18,3 @@ paths:
       summary: Returns meta information about the bucket
     delete:
       summary: Removed the bucket
-  /bucket/{bucket}/token:
-    post:
-      summary: Create a new access token for the bucket
-      requestBody:
-        content:
-          application/json: {}
-    delete:
-      summary: Revoke all access tokens for the bucket.

@@ -83,7 +83,7 @@ function kvs_admin_v1_process() {
         http_response_code(401);
         return;
     }
-    if ($auth != "Bearer " . config\ADMIN_PASSWORD) {
+    if ($auth != "Bearer " . config\ADMIN_TOKEN) {
         error_log("failed to access admin API: invalid token");
         http_response_code(401);
         return;

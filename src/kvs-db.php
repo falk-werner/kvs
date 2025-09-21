@@ -6,7 +6,7 @@ use KeyValueStore\Bucket\Bucket;
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
-const SCHEMA_VERSION = 0;
+const SCHEMA_VERSION = 1;
 
 const TABLE_META   = config\DB_TABLE_PREFIX . 'meta';
 const TABLE_BUCKET = config\DB_TABLE_PREFIX . 'bucket';
@@ -49,14 +49,6 @@ function create_table_bucket($conn) {
   )');
   if ($result === false) {
     die('failed to create database: failed to create bucket table: ' . $conn->error);
-  }
-
-  // ToDo: Remove me
-  // create sample bucket
-  $result = $conn->query('INSERT INTO `' . TABLE_BUCKET . '`
-    (name, max_entries) VALUES (\'foo\', 100)');
-  if ($result === false) {
-    die('failed to create database: failed to initialize bucket table: ' . $conn->error);
   }
 }
 

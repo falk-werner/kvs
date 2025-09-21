@@ -40,25 +40,13 @@ a given point in time.
 
 ## Admin API
 
-### Create Admin access token
-
-    POST /admin/v1/token?account=email
-
-Token will be sent to the email account.
-Currently only the preconfigured admin account can be used.
-Note that admin access token is only valid for a short amount of time.
-
 ### Create a bucket
 
     POST /admin/v1/bucket?allow_anonymous_read=true&allow_anonymous_write=true&max_entries=100&max_entry_size
 
-### Change configuration of a bucket
-
-    PATCH /admin/v1/bucket/<bucket>?allow_anonymous_read=true&allow_anonymous_write=true&max_entries=100&max_entry_size
-
 ### Remove or Reset a bucket
 
-    DELETE /admin/v1/bucket/<bucket>?content-only=true
+    DELETE /admin/v1/bucket/<bucket>
 
 ## Run locally
 

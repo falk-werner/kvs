@@ -112,6 +112,12 @@ function kvs_db_check() {
 }
 
 function kvs_remove_bucket($conn, $name) {
+  $bucket = kvs_bucket_by_name($name);
+  if (!$bucket) {
+    return false;
+  }
+  kvs_entry_remove_all($conn, $bucket->id);
+
   $stmt = $conn->prepare('DELETE FROM `' . TABLE_BUCKET . '` WHERE name=?');
   $stmt->bind_param("s", $name);
   $result = $stmt->execute();
@@ -170,6 +176,50 @@ function kvs_create_bucket($conn) {
   }
 
   return $bucket_name;
+}
+
+function kvs_entry_list($conn, $bucket_id) {
+  $entries = array();
+  $stmt = $conn->prepare('SELECT name, content FROM `' . TABLE_ENTRY . '` WHERE bucket_id=?');
+  $stmt->bind_param("s", $bucket_id);
+  $result = $stmt->execute();
+  if (!$result) {
+    return $names;
+  }
+
+  $stmt->bind_result($name, $content);
+  while ($stmt->fetch()) {
+    $entries[$name] = $content;
+  }
+
+  return $entries;
+
+}
+
+function kvs_entry_remove_all($conn, $bucket_id) {
+  $entries = array();
+  $stmt = $conn->prepare('DELETE FROM `' . TABLE_ENTRY . '` WHERE bucket_id=?');
+  $stmt->bind_param("s", $bucket_id);
+  $result = $stmt->execute();
+  return ($result != false);
+}
+
+
+function kvs_entry_list_keys($conn, $bucket_id) {
+  $names = array();
+  $stmt = $conn->prepare('SELECT name FROM `' . TABLE_ENTRY . '` WHERE bucket_id=?');
+  $stmt->bind_param("s", $bucket_id);
+  $result = $stmt->execute();
+  if (!$result) {
+    return $names;
+  }
+
+  $stmt->bind_result($name);
+  while ($stmt->fetch()) {
+    array_push($names, $name);
+  }
+
+  return $names;
 }
 
 ?>

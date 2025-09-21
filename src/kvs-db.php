@@ -119,6 +119,14 @@ function kvs_db_check() {
   }
 }
 
+function kvs_remove_bucket($conn, $name) {
+  $stmt = $conn->prepare('DELETE FROM `' . TABLE_BUCKET . '` WHERE name=?');
+  $stmt->bind_param("s", $name);
+  $result = $stmt->execute();
+
+  return ($result != false);
+}
+
 function kvs_bucket_by_name($conn, $name) {
   $stmt = $conn->prepare('SELECT bucket_id, name, max_entries FROM `' . TABLE_BUCKET . '` WHERE name=?');
   $stmt->bind_param("s", $name);

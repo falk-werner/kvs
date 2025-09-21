@@ -50,6 +50,11 @@
                     row.appendChild(td_max_entries);
 
                     const td_actions = document.createElement("td");
+                    const remove = document.createElement("input");
+                    remove.type = 'button';
+                    remove.value = "Remove";
+                    remove.addEventListener("click", () => { remove_bucket(name); });
+                    td_actions.appendChild(remove);
                     row.appendChild(td_actions);
                 } 
             }
@@ -67,6 +72,22 @@
                 });
 
                 console.log(await response.json());
+                await list_buckets();
+        }
+
+        async function remove_bucket(bucket_name) {
+            try {
+                const token = document.querySelector("#token").value;
+                const response = await fetch(`/admin/v1/bucket/${bucket_name}`, {
+                    method: "DELETE",
+                    headers: new Headers({"Authorization": `Bearer ${token}`})
+                });
+                await list_buckets();
+                return await response.json();
+            }
+            catch (err) {
+                console.error(err);
+            }
         }
 
     </script>

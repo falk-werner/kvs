@@ -2,6 +2,7 @@
 
 use KeyValueStore\Config as config;
 use function KeyValueStore\Bucket\create_bucket_name;
+use KeyValueStore\Bucket\Bucket;
 
 mysqli_report(MYSQLI_REPORT_OFF);
 

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Example</title>
+    <script type="text/javascript">
+
+        function startup() {
+            document.querySelector("#list_buckets").addEventListener("click", list_buckets);
+        }
+
+        async function list_buckets() {
+            const ul = document.querySelector("#buckets");
+            ul.textContent = "";
+
+            try {
+                const token = document.querySelector("#admin_secret").value;
+                const response = await fetch('/admin/v1/bucket', {
+                    headers: new Headers({"Authorization": `Bearer ${token}`})
+                });
+
+                const bucket_names = await response.json();
+                for(let name of bucket_names) {
+                    const li = document.createElement("li");
+                    li.textContent = name;
+                    ul.appendChild(li);
+                } 
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+
+    </script>
+</head>
+<body onload="startup()">
+    <h1>KVS - Admin</h1>
+    <p>
+        <label>Admin Secret</label><input type="password" id="admin_secret" />
+    </p>
+    <p>
+        <input type="button" id="list_buckets" value="List Buckets" />
+        <ul id="buckets"></ul>
+    </p>
+</body>
+</html>

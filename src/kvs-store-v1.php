@@ -2,6 +2,21 @@
 
 define('KVS_STORE_V1_PREFIX', '/store/v1/');
 
+function kvs_read_value() {
+    $input = fopen('php://input', 'rb');
+    $data = fread($input, 10240);
+
+    // read another character to detect end of file
+    $dummy = fread($input, 1);
+    if (!feof($input)) {
+        fclose($input);
+        return false;
+    }    
+    fclose($input);
+
+    return $data;
+}
+
 function kvs_store_v1_process_bucket($bucket_name) {
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
@@ -54,19 +69,66 @@ function kvs_store_v1_process_keys($bucket_name) {
     }
 }
 
-function kvs_store_v1_process_entry($bucket, $key) {
+function kvs_store_v1_process_entry($bucket_name, $key) {
+    if (strlen($key) > 256) {
+        http_response_code(404);
+        return;
+    }
+
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
         case 'GET':
+            $conn = kvs_db_open();
+            $bucket = kvs_bucket_by_name($conn, $bucket_name);
+            if (!$bucket) {
+                http_response_code(404);
+                return;
+            }
+            $value = kvs_entry_get_value($conn, $bucket->id, $key);
+            if ($value === false) {
+                http_response_code(404);
+                return;
+            }
             http_response_code(200);
             header('Content-Type: text/plain');
-            echo "A\n";
+            echo "$value";
             break;
         case 'PUT':
         case 'POST':
-            http_response_code(201);
+            $value = kvs_read_value();
+            $conn = kvs_db_open();
+            $bucket = kvs_bucket_by_name($conn, $bucket_name);
+            if (!$bucket) {
+                http_response_code(404);
+                return;
+            }
+            $count = kvs_entry_count_keys($conn, $bucket->id);
+            if ($count >= $bucket->max_entries) {
+                http_response_code(400);
+                header('Content-Type: text/plain');
+                echo "Too many entries";
+                return;
+            }
+            error_log("count: " . $count);
+            $entry_id = kvs_entry_get_id($conn, $bucket->id, $key);
+            if ($entry_id) {
+                error_log("update");
+                $success = kvs_entry_update($conn, $entry_id, $value);
+                http_response_code($success ? 200 : 500);
+            }
+            else {
+                $success = kvs_entry_create($conn, $bucket->id, $key, $value);
+                http_response_code($success ? 201 : 500);
+            }
             break;
         case 'DELETE':
+            $conn = kvs_db_open();
+            $bucket = kvs_bucket_by_name($conn, $bucket_name);
+            if (!$bucket) {
+                http_response_code(404);
+                return;
+            }
+            kvs_entry_remove($conn, $bucket->id, $key);
             http_response_code(204);
             break;
         default:

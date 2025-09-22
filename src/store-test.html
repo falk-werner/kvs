@@ -22,15 +22,15 @@
                     const row = document.createElement("tr");
                     tbody.appendChild(row);
 
-                    const td_key = document.createComment("td");
+                    const td_key = document.createElement("td");
                     row.appendChild(td_key);
                     td_key.textContent = key;
 
-                    const td_value = document.createComment("td");
+                    const td_value = document.createElement("td");
                     row.appendChild(td_value);
                     td_value.textContent = value;
 
-                    const td_actions = document.createComment("td");
+                    const td_actions = document.createElement("td");
                     row.appendChild(td_actions);
                     const remove = document.createElement("input");
                     td_actions.appendChild(remove);

@@ -184,11 +184,13 @@ function kvs_entry_list($conn, $bucket_id) {
   $stmt->bind_param("s", $bucket_id);
   $result = $stmt->execute();
   if (!$result) {
+    error_log("failed to list entries");
     return $names;
   }
 
   $stmt->bind_result($name, $content);
   while ($stmt->fetch()) {
+    error_log("name: " . $name);
     $entries[$name] = $content;
   }
 
@@ -220,6 +222,88 @@ function kvs_entry_list_keys($conn, $bucket_id) {
   }
 
   return $names;
+}
+
+function kvs_entry_count_keys($conn, $bucket_id) {
+  $stmt = $conn->prepare('SELECT COUNT(entry_id) FROM `' . TABLE_ENTRY . '` WHERE bucket_id=?');
+  $stmt->bind_param("s", $bucket_id);
+  $result = $stmt->execute();
+  if (!$result) {
+    return -1;
+  }
+
+  $stmt->bind_result($count);
+  if (!$stmt->fetch()) {
+    return -1;
+  }
+
+  return $count;
+}
+
+function kvs_entry_get_id($conn, $bucket_id, $key) {
+  $stmt = $conn->prepare('SELECT entry_id FROM `' . TABLE_ENTRY . '` WHERE bucket_id=? AND name=?');
+  $stmt->bind_param("ss", $bucket_id, $key);
+  $result = $stmt->execute();
+  if (!$result) {
+    error_log("failed to execute query");
+    return false;
+  }
+
+  $stmt->bind_result($entry_id);
+  if (!$stmt->fetch()) {
+    error_log("failed to fetch");
+    return false;
+  }
+
+  return $entry_id;
+}
+
+
+function kvs_entry_update($conn, $entry_id, $value) {
+  $stmt = $conn->prepare('UPDATE `' . TABLE_ENTRY . '` SET content=? WHERE entry_id=?');
+  $stmt->bind_param("si", $value, $entry_id);
+  $result = $stmt->execute();
+  if (!$result) {
+    error_log('failed to update entry: '. $conn->error);
+    return false;
+
+  }
+  return true;
+}
+
+function kvs_entry_create($conn, $bucket_id, $key, $value) {
+  $stmt = $conn->prepare('INSERT INTO `' . TABLE_ENTRY . '` (bucket_id, name, content) VALUES (?, ?, ?)');
+  $stmt->bind_param("sss", $bucket_id, $key, $value);
+  $result = $stmt->execute();
+  if (!$result) {
+    error_log('failed to create entry: '. $conn->error);
+    return false;
+
+  }
+  return true;
+}
+
+function kvs_entry_remove($conn, $bucket_id, $key) {
+  $stmt = $conn->prepare('DELETE FROM `' . TABLE_ENTRY . '` WHERE bucket_id=? AND name=?');
+  $stmt->bind_param("ss", $bucket_id, $key);
+  $stmt->execute();
+}
+
+function kvs_entry_get_value($conn, $bucket_id, $key) {
+  $stmt = $conn->prepare('SELECT content FROM `' . TABLE_ENTRY . '` WHERE bucket_id=? AND name=?');
+  $stmt->bind_param("ss", $bucket_id, $key);
+  $result = $stmt->execute();
+  if (!$result) {
+    return false;
+  }
+
+  $stmt->bind_result($value);
+  if (!$stmt->fetch()) {
+    error_log("failed to fetch");
+    return false;
+  }
+
+  return $value;
 }
 
 ?>

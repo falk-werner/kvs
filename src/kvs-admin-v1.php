@@ -77,6 +77,10 @@ function kvs_admin_v1_process_named_bucket($bucket_name) {
 }
 
 function kvs_admin_v1_process() {
+    // Penalty for using admin API.
+    // This slows down brute force attacks.
+    usleep(100 * 1000);
+
     $headers = getallheaders();
     $auth = http_get_header("authorization");
     if (!$auth) {

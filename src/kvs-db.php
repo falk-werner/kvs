@@ -112,7 +112,7 @@ function kvs_db_check() {
 }
 
 function kvs_remove_bucket($conn, $name) {
-  $bucket = kvs_bucket_by_name($name);
+  $bucket = kvs_bucket_by_name($conn, $name);
   if (!$bucket) {
     return false;
   }

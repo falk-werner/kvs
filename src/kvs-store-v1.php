@@ -2,21 +2,6 @@
 
 define('KVS_STORE_V1_PREFIX', '/store/v1/');
 
-function kvs_read_value() {
-    $input = fopen('php://input', 'rb');
-    $data = fread($input, 10240);
-
-    // read another character to detect end of file
-    $dummy = fread($input, 1);
-    if (!feof($input)) {
-        fclose($input);
-        return false;
-    }    
-    fclose($input);
-
-    return $data;
-}
-
 function kvs_store_v1_process_bucket($bucket_name) {
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
@@ -95,7 +80,7 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
             break;
         case 'PUT':
         case 'POST':
-            $value = kvs_read_value();
+            $value = kvs_read_value(10240);
             $conn = kvs_db_open();
             $bucket = kvs_bucket_by_name($conn, $bucket_name);
             if (!$bucket) {

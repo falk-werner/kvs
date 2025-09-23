@@ -137,27 +137,24 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
     }
 }
 
-function kvs_store_v1_process() {
+function kvs_store_v1_process($path) {
 
-    $path = $_SERVER['PATH_INFO'];
-    if (preg_match('/^\/store\/v1\/bucket\/([^\/]+)$/', $path, $matches)) {
+    $path = substr($path, strlen(KVS_ADMIN_V1_PREFIX));
+    if (preg_match('/^bucket\/([^\/]+)$/', $path, $matches)) {
         $bucket = $matches[1];
         kvs_store_v1_process_bucket($bucket);
     }
-    else if (preg_match('/^\/store\/v1\/bucket\/([^\/]+)\/keys$/', $path, $matches)) {
+    else if (preg_match('/^bucket\/([^\/]+)\/keys$/', $path, $matches)) {
         $bucket = $matches[1];
         kvs_store_v1_process_keys($bucket);
     }
-    else if (preg_match('/^\/store\/v1\/bucket\/([^\/]+)\/entry\/([a-zA-Z0-9-_\.]+)$/', $path, $matches)) {
+    else if (preg_match('/^bucket\/([^\/]+)\/entry\/([a-zA-Z0-9-_\.]+)$/', $path, $matches)) {
         $bucket = $matches[1];
         $key = $matches[2];
         kvs_store_v1_process_entry($bucket, $key);
     }
     else {
         http_response_code(404);
-        header("Content-Type: text/plain");
-        echo "Connected successfully\n";
-        echo $_SERVER['PATH_INFO'] . "\n";      
     }
 }
 

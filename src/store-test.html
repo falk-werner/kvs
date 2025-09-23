@@ -15,7 +15,7 @@
 
             const bucket_name = document.querySelector("#bucket_name").value;
             try {
-                const response = await fetch(`/store/v1/bucket/${bucket_name}`);
+                const response = await fetch(`store/v1/bucket/${bucket_name}`);
                 const entries = await response.json();
 
                 for(let [key, value] of Object.entries(entries)) {
@@ -47,7 +47,7 @@
         async function clear_entries() {
             const bucket_name = document.querySelector("#bucket_name").value;
             try {
-                await fetch(`/store/v1/bucket/${bucket_name}`, {method: "DELETE"});
+                await fetch(`store/v1/bucket/${bucket_name}`, {method: "DELETE"});
                 await update_entries();
             }
             catch (err) {
@@ -60,7 +60,7 @@
             const key = document.querySelector("#key").value;
             const value = document.querySelector("#value").value;
             try {
-                await fetch(`/store/v1/bucket/${bucket_name}/entry/${key}`, {method: "POST", body: value});
+                await fetch(`store/v1/bucket/${bucket_name}/entry/${key}`, {method: "POST", body: value});
                 await update_entries();
             }
             catch (err) {
@@ -72,7 +72,7 @@
             const bucket_name = document.querySelector("#bucket_name").value;
 
             try {
-                await fetch(`/store/v1/bucket/${bucket_name}/entry/${key}`, {method: "DELETE"});
+                await fetch(`store/v1/bucket/${bucket_name}/entry/${key}`, {method: "DELETE"});
                 await update_entries();
             }
             catch (err) {

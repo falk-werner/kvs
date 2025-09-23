@@ -76,7 +76,7 @@ function kvs_admin_v1_process_named_bucket($bucket_name) {
     }
 }
 
-function kvs_admin_v1_process() {
+function kvs_admin_v1_process($path) {
     // Penalty for using admin API.
     // This slows down brute force attacks.
     usleep(100 * 1000);
@@ -93,13 +93,16 @@ function kvs_admin_v1_process() {
         return;
     }
 
-    $path = substr($_SERVER['PATH_INFO'], strlen(KVS_ADMIN_V1_PREFIX));
+    $path = substr($path, strlen(KVS_ADMIN_V1_PREFIX));
     if ($path == "bucket") {
         kvs_admin_v1_process_bucket();
     }
     else if (preg_match("/^bucket\/([^\/]+)$/", $path, $matches)) {
         $bucket_name = $matches[1];
         kvs_admin_v1_process_named_bucket($bucket_name);
+    }
+    else {
+        http_response_code(404);
     }
 
 }

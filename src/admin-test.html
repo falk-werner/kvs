@@ -7,6 +7,8 @@
         function startup() {
             document.querySelector("#list_buckets").addEventListener("click", list_buckets);
             document.querySelector("#create_bucket").addEventListener("click", create_bucket);
+            document.querySelector("#set_comment").addEventListener("click", set_comment);
+            document.querySelector("#get_comment").addEventListener("click", get_comment);
         }
 
         async function get_bucket_info(bucket_name) {
@@ -44,6 +46,10 @@
                     const td_name = document.createElement("td");
                     td_name.textContent = name;
                     row.appendChild(td_name);
+
+                    const td_comment = document.createElement("td");
+                    td_comment.textContent = info.comment;
+                    row.appendChild(td_comment);
 
                     const td_max_entries = document.createElement("td");
                     td_max_entries.textContent = info.max_entries;
@@ -90,6 +96,40 @@
             }
         }
 
+        async function set_comment() {
+            const token = document.querySelector("#token").value;
+            const bucket_name = document.querySelector("#bucket_name").value;
+            const comment = document.querySelector("#comment").value;
+
+            try {
+                await fetch(`admin/v1/bucket/${bucket_name}/comment`, {
+                    method: "POST",
+                    headers: new Headers({"Authorization": `Bearer ${token}`}),
+                    body: comment
+                });
+                await list_buckets();
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function get_comment() {
+            const token = document.querySelector("#token").value;
+            const bucket_name = document.querySelector("#bucket_name").value;
+
+            try {
+                const response = await fetch(`admin/v1/bucket/${bucket_name}/comment`, {
+                    headers: new Headers({"Authorization": `Bearer ${token}`})
+                });
+                const comment = await response.text();
+                document.querySelector("#comment").value = comment;
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+
     </script>
 </head>
 <body onload="startup()">
@@ -97,6 +137,20 @@
     <p>
         <label>API Token: </label><input type="password" id="token" />
     </p>
+    
+    <h2>Set Comment</h2>
+    <p>
+        <label>Bucket: </label><input type="text" id="bucket_name" />
+    </p>
+    <p>
+        <label>Comment: </label><input type="text" id="comment" />
+    </p>
+    <p>
+        <input type="button" id="set_comment" value="Set Comment" />
+        <input type="button" id="get_comment" value="Get Comment" />
+    </p>
+
+    <h2>Buckets</h2>
     <p>
         <input type="button" id="create_bucket" value="New"/>
         <input type="button" id="list_buckets" value="Update" />
@@ -104,6 +158,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Comment</th>
                     <th>Max. Entries</th>
                     <th>Actions</th>
                 </tr>

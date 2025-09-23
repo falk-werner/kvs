@@ -8,11 +8,13 @@ use function KeyValueStore\Base64Url\b64url_encode;
 class Bucket {
     public $id;
     public $name;
+    public $comment;
     public $max_entries;
 
-    public function __construct($id, $name, $max_entries) {
+    public function __construct($id, $name, $comment, $max_entries) {
         $this->id = $id;
         $this->name = $name;
+        $this->comment = $comment;
         $this->max_entries = $max_entries;
     }
 }

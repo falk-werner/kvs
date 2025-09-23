@@ -18,3 +18,8 @@ paths:
       summary: Returns meta information about the bucket
     delete:
       summary: Removed the bucket
+  /bucket/{bucket}/comment:
+    get:
+      summary: Return the comment of the bucket
+    post:
+      summary: Sets the comment of the bucket

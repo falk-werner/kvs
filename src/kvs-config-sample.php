@@ -10,7 +10,7 @@ const DB_TABLE_PREFIX = 'kvs_';
 
 const ADMIN_TOKEN = 'secret';
 
-const JWT_SECRET = 'jwt-secret';
+const CONTEXT = '';
 
 define('KEYVALUESTORE_CONFIG_VALID', '1');
 

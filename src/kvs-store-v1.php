@@ -3,16 +3,16 @@
 define('KVS_STORE_V1_PREFIX', '/store/v1/');
 
 function kvs_store_v1_process_bucket($bucket_name) {
+    $conn = kvs_db_open();
+    $bucket = kvs_bucket_by_name($conn, $bucket_name);
+    if (!$bucket) {
+        http_response_code(404);
+        return;
+    }
+
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
         case 'GET':
-            $conn = kvs_db_open();
-            $bucket = kvs_bucket_by_name($conn, $bucket_name);
-            if (!$bucket) {
-                http_response_code(404);
-                header('Access-Control-Allow-Origin: *');
-                return;
-            }
             $entries = kvs_entry_list($conn, $bucket->id);
             http_response_code(200);
             header('Content-Type: application/json');
@@ -20,13 +20,6 @@ function kvs_store_v1_process_bucket($bucket_name) {
             echo json_encode($entries, JSON_FORCE_OBJECT);
             break;
         case 'DELETE':
-            $conn = kvs_db_open();
-            $bucket = kvs_bucket_by_name($conn, $bucket_name);
-            if (!$bucket) {
-                http_response_code(404);
-                header('Access-Control-Allow-Origin: *');
-                return;
-            }
             kvs_entry_remove_all($conn, $bucket->id);
             http_response_code(200);
             header('Access-Control-Allow-Origin: *');
@@ -39,16 +32,16 @@ function kvs_store_v1_process_bucket($bucket_name) {
 }
 
 function kvs_store_v1_process_keys($bucket_name) {
+    $conn = kvs_db_open();
+    $bucket = kvs_bucket_by_name($conn, $bucket_name);
+    if (!$bucket) {
+        http_response_code(404);
+        return;
+    }
+
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
         case 'GET':
-            $conn = kvs_db_open();
-            $bucket = kvs_bucket_by_name($conn, $bucket_name);
-            if (!$bucket) {
-                http_response_code(404);
-                header('Access-Control-Allow-Origin: *');
-                return;
-            }
             $names = kvs_entry_list_keys($conn, $bucket->id);
             http_response_code(200);
             header('Content-Type: application/json');
@@ -63,6 +56,13 @@ function kvs_store_v1_process_keys($bucket_name) {
 }
 
 function kvs_store_v1_process_entry($bucket_name, $key) {
+    $conn = kvs_db_open();
+    $bucket = kvs_bucket_by_name($conn, $bucket_name);
+    if (!$bucket) {
+        http_response_code(404);
+        return;
+    }
+
     if (strlen($key) > 256) {
         http_response_code(404);
         header('Access-Control-Allow-Origin: *');
@@ -72,13 +72,6 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
     $method = $_SERVER['REQUEST_METHOD'];
     switch ($method) {
         case 'GET':
-            $conn = kvs_db_open();
-            $bucket = kvs_bucket_by_name($conn, $bucket_name);
-            if (!$bucket) {
-                http_response_code(404);
-                header('Access-Control-Allow-Origin: *');
-                return;
-            }
             $value = kvs_entry_get_value($conn, $bucket->id, $key);
             if ($value === false) {
                 http_response_code(404);
@@ -93,13 +86,6 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
         case 'PUT':
         case 'POST':
             $value = kvs_read_value(10240);
-            $conn = kvs_db_open();
-            $bucket = kvs_bucket_by_name($conn, $bucket_name);
-            if (!$bucket) {
-                http_response_code(404);
-                header('Access-Control-Allow-Origin: *');
-                return;
-            }
             $count = kvs_entry_count_keys($conn, $bucket->id);
             if ($count >= $bucket->max_entries) {
                 http_response_code(400);
@@ -123,13 +109,6 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
             }
             break;
         case 'DELETE':
-            $conn = kvs_db_open();
-            $bucket = kvs_bucket_by_name($conn, $bucket_name);
-            if (!$bucket) {
-                http_response_code(404);
-                header('Access-Control-Allow-Origin: *');
-                return;
-            }
             kvs_entry_remove($conn, $bucket->id, $key);
             http_response_code(204);
             header('Access-Control-Allow-Origin: *');
@@ -159,7 +138,6 @@ function kvs_store_v1_process($path) {
     }
     else {
         http_response_code(404);
-        header('Access-Control-Allow-Origin: *');
     }
 }
 

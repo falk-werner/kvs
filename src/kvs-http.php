@@ -10,6 +10,12 @@ function http_get_header($name) {
     return "";
 }
 
+function kvs_header($value) {
+    if ($value) {
+        header($value);
+    }
+}
+
 function kvs_read_value($max_size) {
     $input = fopen('php://input', 'rb');
     $data = fread($input, $max_size);

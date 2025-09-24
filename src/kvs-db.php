@@ -6,7 +6,7 @@ use KeyValueStore\Bucket\Bucket;
 
 mysqli_report(MYSQLI_REPORT_OFF);
 
-const SCHEMA_VERSION = 2;
+const SCHEMA_VERSION = 3;
 
 const TABLE_META   = config\DB_TABLE_PREFIX . 'meta';
 const TABLE_BUCKET = config\DB_TABLE_PREFIX . 'bucket';
@@ -45,6 +45,7 @@ function create_table_bucket($conn) {
     bucket_id INT UNSIGNED AUTO_INCREMENT,
     name VARCHAR(32) NOT NULL UNIQUE,
     comment VARCHAR(255) NOT NULL DEFAULT "",
+    allowed_origin VARCHAR(255) NOT NULL DEFAULT "",
     max_entries INT UNSIGNED,
     PRIMARY KEY (bucket_id)
   )');
@@ -127,20 +128,20 @@ function kvs_remove_bucket($conn, $name) {
 }
 
 function kvs_bucket_by_name($conn, $name) {
-  $stmt = $conn->prepare('SELECT bucket_id, name, comment, max_entries FROM `' . TABLE_BUCKET . '` WHERE name=?');
+  $stmt = $conn->prepare('SELECT bucket_id, name, comment, allowed_origin, max_entries FROM `' . TABLE_BUCKET . '` WHERE name=?');
   $stmt->bind_param("s", $name);
   $result = $stmt->execute();
   if (!$result) {
     return false;
   }
 
-  $stmt->bind_result($bucket_id, $bucket_name, $comment, $max_entries);
+  $stmt->bind_result($bucket_id, $bucket_name, $comment, $allowed_origin, $max_entries);
   $result = $stmt->fetch();
   if (!$result) {
     return false;
   }
 
-  return new Bucket($bucket_id, $bucket_name, $comment, $max_entries);
+  return new Bucket($bucket_id, $bucket_name, $comment, $allowed_origin, $max_entries);
 }
 
 function kvs_list_buckets($conn) {
@@ -191,6 +192,20 @@ function kvs_bucket_set_comment($conn, $bucket_id, $comment)
   }
   return true;
 }
+
+function kvs_bucket_set_allowed_origin($conn, $bucket_id, $allowed_origin)
+{
+  $stmt = $conn->prepare('UPDATE `' . TABLE_BUCKET . '` SET allowed_origin=? WHERE bucket_id=?');
+  $stmt->bind_param("si", $allowed_origin, $bucket_id);
+  $result = $stmt->execute();
+  if (!$result) {
+    error_log('failed to update entry: '. $conn->error);
+    return false;
+
+  }
+  return true;
+}
+
 
 function kvs_entry_list($conn, $bucket_id) {
   $entries = array();

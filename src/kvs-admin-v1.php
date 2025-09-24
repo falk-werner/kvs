@@ -55,6 +55,7 @@ function kvs_admin_v1_process_named_bucket($bucket_name) {
             echo json_encode(array(
                 "name" => $bucket->name,
                 "comment" => $bucket->comment,
+                "allowed_origin" => $bucket->allowed_origin,
                 "max_entries" => $bucket->max_entries
             ));
             break;
@@ -105,6 +106,34 @@ function kvs_admin_v1_process_bucket_comment($bucket_name) {
     }
 }
 
+function kvs_admin_v1_process_bucket_allowed_origin($bucket_name) {
+    $conn = kvs_db_open();
+    $bucket = kvs_bucket_by_name($conn, $bucket_name);
+    if (!$bucket) {
+        http_response_code(404);
+        return;
+    }
+
+    $method = $_SERVER['REQUEST_METHOD'];
+    switch ($method) {
+        case 'GET':
+            http_response_code(200);
+            header('Content-Type: text/plain');
+            echo $bucket->allowed_origin;
+            break;
+        case 'PUT':
+            // fall-through
+        case 'POST':
+            $allowed_origin = kvs_read_value(255);
+            kvs_bucket_set_allowed_origin($conn, $bucket->id, $allowed_origin);
+            http_response_code(204);
+            return;
+        default:
+            http_response_code(405);
+            break;
+    }
+}
+
 
 function kvs_admin_v1_process($path) {
     // Penalty for using admin API.
@@ -134,6 +163,10 @@ function kvs_admin_v1_process($path) {
     else if (preg_match("/^bucket\/([^\/]+)\/comment$/", $path, $matches)) {
         $bucket_name = $matches[1];
         kvs_admin_v1_process_bucket_comment($bucket_name);
+    }
+    else if (preg_match("/^bucket\/([^\/]+)\/allowed_origin$/", $path, $matches)) {
+        $bucket_name = $matches[1];
+        kvs_admin_v1_process_bucket_allowed_origin($bucket_name);
     }
     else {
         http_response_code(404);

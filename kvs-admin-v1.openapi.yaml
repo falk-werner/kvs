@@ -23,3 +23,8 @@ paths:
       summary: Return the comment of the bucket
     post:
       summary: Sets the comment of the bucket
+  /bucket/{bucket}/allowed_origin:
+    get:
+      summary: Return the allowed origin (see HTTPS CORS)
+    post:
+      summary: Sets the allowed origin (see HTTPS CORS)

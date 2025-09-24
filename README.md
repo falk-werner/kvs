@@ -21,4 +21,3 @@ You also need a database available.
 ## Reference
 
 - [Base64Url](https://datatracker.ietf.org/doc/html/rfc4648#section-5)
-- [JWT](https://jwt.io/)

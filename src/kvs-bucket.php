@@ -9,12 +9,14 @@ class Bucket {
     public $id;
     public $name;
     public $comment;
+    public $alloed_origin;
     public $max_entries;
 
-    public function __construct($id, $name, $comment, $max_entries) {
+    public function __construct($id, $name, $comment, $allowed_origin, $max_entries) {
         $this->id = $id;
         $this->name = $name;
         $this->comment = $comment;
+        $this->allowed_origin = $allowed_origin;
         $this->max_entries = $max_entries;
     }
 }

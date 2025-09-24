@@ -9,6 +9,8 @@
             document.querySelector("#create_bucket").addEventListener("click", create_bucket);
             document.querySelector("#set_comment").addEventListener("click", set_comment);
             document.querySelector("#get_comment").addEventListener("click", get_comment);
+            document.querySelector("#set_allowed_origin").addEventListener("click", set_allowed_origin);
+            document.querySelector("#get_allowed_origin").addEventListener("click", get_allowed_origin);
         }
 
         async function get_bucket_info(bucket_name) {
@@ -50,6 +52,10 @@
                     const td_comment = document.createElement("td");
                     td_comment.textContent = info.comment;
                     row.appendChild(td_comment);
+
+                    const td_allowed_origin = document.createElement("td");
+                    td_allowed_origin.textContent = info.allowed_origin;
+                    row.appendChild(td_allowed_origin);
 
                     const td_max_entries = document.createElement("td");
                     td_max_entries.textContent = info.max_entries;
@@ -130,6 +136,39 @@
             }
         }
 
+        async function set_allowed_origin() {
+            const token = document.querySelector("#token").value;
+            const bucket_name = document.querySelector("#bucket_name").value;
+            const allowed_origin = document.querySelector("#allowed_origin").value;
+
+            try {
+                await fetch(`admin/v1/bucket/${bucket_name}/allowed_origin`, {
+                    method: "POST",
+                    headers: new Headers({"Authorization": `Bearer ${token}`}),
+                    body: allowed_origin
+                });
+                await list_buckets();
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
+
+        async function get_allowed_origin() {
+            const token = document.querySelector("#token").value;
+            const bucket_name = document.querySelector("#bucket_name").value;
+
+            try {
+                const response = await fetch(`admin/v1/bucket/${bucket_name}/allowed_origin`, {
+                    headers: new Headers({"Authorization": `Bearer ${token}`})
+                });
+                const allowed_origin = await response.text();
+                document.querySelector("#allowed_origin").value = allowed_origin;
+            }
+            catch (err) {
+                console.error(err);
+            }
+        }
     </script>
 </head>
 <body onload="startup()">
@@ -150,6 +189,18 @@
         <input type="button" id="get_comment" value="Get Comment" />
     </p>
 
+    <h2>Set Allowed Origin</h2>
+    <p>
+        <label>Bucket: </label><input type="text" id="bucket_name" />
+    </p>
+    <p>
+        <label>Allowed Origin: </label><input type="text" id="allowed_origin" />
+    </p>
+    <p>
+        <input type="button" id="set_allowed_origin" value="Set Allowed Origin" />
+        <input type="button" id="get_allowed_origin" value="Get Allowed Origin" />
+    </p>
+
     <h2>Buckets</h2>
     <p>
         <input type="button" id="create_bucket" value="New"/>
@@ -159,6 +210,7 @@
                 <tr>
                     <th>Name</th>
                     <th>Comment</th>
+                    <th>Allowed Origin</th>
                     <th>Max. Entries</th>
                     <th>Actions</th>
                 </tr>

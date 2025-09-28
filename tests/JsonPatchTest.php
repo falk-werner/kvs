@@ -96,6 +96,43 @@ final class JsonPatchTest extends TestCase
         $this->assertSame("{\"b\":2}", $result);
     }
 
+
+    public function testReplace() {
+        $value = "{\"a\": 1}";
+        $patch = "[{\"op\": \"replace\", \"path\": \"/a\", \"value\": 2}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("{\"a\":2}", $result);
+    }
+
+    public function testMove() {
+        $value = "{\"a\": 1}";
+        $patch = "[{\"op\": \"move\", \"from\": \"/a\", \"path\": \"/b\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("{\"b\":1}", $result);
+    }
+
+    public function testCopy() {
+        $value = "{\"a\": 1}";
+        $patch = "[{\"op\": \"copy\", \"from\": \"/a\", \"path\": \"/b\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("{\"a\":1,\"b\":1}", $result);
+    }
+
+    public function testTest() {
+        $value = "{\"a\": 1}";
+        $patch = "[{\"op\": \"test\", \"path\": \"/a\", \"value\": 1}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("{\"a\":1}", $result);
+    }
+
 }
 
 ?>

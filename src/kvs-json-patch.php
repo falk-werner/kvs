@@ -98,6 +98,213 @@ function kvs_json_patch_remove($target, $entry) {
     return [$target, false];
 }
 
+function kvs_json_patch_replace($target, $entry) {
+    if (!array_key_exists('path', $entry)) {
+        return [null, "missing required property \"path\""];
+    }
+    $path = $entry["path"];
+
+    if (!array_key_exists('value', $entry)) {
+        return [null, "missing required property \"path\""];
+    }
+    $value = $entry["value"];
+
+    [$path, $err] = kvs_json_pointer_parse($path);
+    if ($err !== false) {
+        return [null, $err];
+    }
+
+    $top = array_pop($path);
+    if (null == $top) {
+        return [null, "element required"];
+    }
+
+    $temp = &$target;
+    foreach($path as $item) {
+        if (!array_key_exists($item, $temp)) {
+            return [null, "key not exists"];
+        }
+
+        $temp = &$target[$item];
+    }
+
+    if (!array_key_exists($top, $temp)) {
+        return [null, "key not exists"];
+    }   
+
+    $temp[$top] = $value;
+    return [$target, false];
+}
+
+function kvs_json_patch_move($target, $entry) {
+    // check and get parameters
+    if (!array_key_exists('path', $entry)) {
+        return [null, "missing required property \"path\""];
+    }
+    $path = $entry["path"];
+
+    [$path, $err] = kvs_json_pointer_parse($path);
+    if ($err !== false) {
+        return [null, $err];
+    }
+
+    if (!array_key_exists('from', $entry)) {
+        return [null, 'missing required property \"from\"'];
+    }
+    $from = $entry['from'];
+
+    [$from, $err] = kvs_json_pointer_parse($from);
+    if ($err !== false) {
+        return [null, $err];
+    }
+
+    // get value
+    $top = array_pop($from);
+    if (null == $top) {
+        return [null, "element required"];
+    }
+
+    $temp = &$target;
+    foreach($from as $item) {
+        if (!array_key_exists($item, $temp)) {
+            return [null, "key not exists"];
+        }
+
+        $temp = &$target[$item];
+    }
+
+    if (!array_key_exists($top, $temp)) {
+        return [null, "key not exists"];
+    }
+
+    $value = $temp[$top];
+    unset($temp[$top]);    
+
+    // set vaulue
+    $top = array_pop($path);
+    if (null == $top) {
+        return [null, "element required"];
+    }
+
+    $temp = &$target;
+    foreach($from as $item) {
+        if (!array_key_exists($item, $temp)) {
+            return [null, "key not exists"];
+        }
+
+        $temp = &$target[$item];
+    }
+    $temp[$top] = $value;
+
+    return [$target, false];
+}
+
+function kvs_json_patch_copy($target, $entry) {
+    // check and get parameters
+    if (!array_key_exists('path', $entry)) {
+        return [null, "missing required property \"path\""];
+    }
+    $path = $entry["path"];
+
+    [$path, $err] = kvs_json_pointer_parse($path);
+    if ($err !== false) {
+        return [null, $err];
+    }
+
+    if (!array_key_exists('from', $entry)) {
+        return [null, 'missing required property \"from\"'];
+    }
+    $from = $entry['from'];
+
+    [$from, $err] = kvs_json_pointer_parse($from);
+    if ($err !== false) {
+        return [null, $err];
+    }
+
+    // get value
+    $top = array_pop($from);
+    if (null == $top) {
+        return [null, "element required"];
+    }
+
+    $temp = &$target;
+    foreach($from as $item) {
+        if (!array_key_exists($item, $temp)) {
+            return [null, "key not exists"];
+        }
+
+        $temp = &$target[$item];
+    }
+
+    if (!array_key_exists($top, $temp)) {
+        return [null, "key not exists"];
+    }
+
+    $value = $temp[$top];
+
+    // set vaulue
+    $top = array_pop($path);
+    if (null == $top) {
+        return [null, "element required"];
+    }
+
+    $temp = &$target;
+    foreach($from as $item) {
+        if (!array_key_exists($item, $temp)) {
+            return [null, "key not exists"];
+        }
+
+        $temp = &$target[$item];
+    }
+    $temp[$top] = $value;
+
+    return [$target, false];
+}
+
+function kvs_json_patch_test($target, $entry) {
+    if (!array_key_exists('path', $entry)) {
+        return [null, "missing required property \"path\""];
+    }
+    $path = $entry["path"];
+
+    [$path, $err] = kvs_json_pointer_parse($path);
+    if ($err !== false) {
+        return [null, $err];
+    }
+
+    if (!array_key_exists('value', $entry)) {
+        return [null, "missing required property \"value\""];
+    }
+    $value = $entry["value"];
+
+
+    $top = array_pop($path);
+    if (null == $top) {
+        return [null, "element required"];
+    }
+
+    $temp = &$target;
+    foreach($path as $item) {
+        if (!array_key_exists($item, $temp)) {
+            return [null, "key not exists"];
+        }
+
+        $temp = &$target[$item];
+    }
+
+    if (!array_key_exists($top, $temp)) {
+        return [null, "key not exists"];
+    }
+
+    $other_value = $temp[$top];
+
+    if ($other_value != $value) {
+        return [null, "values not equal: "];
+    }
+
+    return [$target, false];
+}
+
 
 function kvs_json_patch_entry($value, $entry) {
     if (!array_key_exists('op', $entry)) {
@@ -110,6 +317,14 @@ function kvs_json_patch_entry($value, $entry) {
             return kvs_json_patch_add($value, $entry);
         case "remove":
             return kvs_json_patch_remove($value, $entry);
+        case "replace":
+            return kvs_json_patch_replace($value, $entry);
+        case "move":
+            return kvs_json_patch_move($value, $entry);
+        case "copy":
+            return kvs_json_patch_copy($value, $entry);
+        case "test":
+            return kvs_json_patch_test($value, $entry);
         default:
             return [null, "unknown operation: " . $op];
     }

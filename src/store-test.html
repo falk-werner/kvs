@@ -7,6 +7,7 @@
             document.querySelector("#update").addEventListener("click", update_entries);
             document.querySelector("#clear").addEventListener("click", clear_entries);
             document.querySelector("#set_value").addEventListener("click", set_entry);
+            document.querySelector("#patch_value").addEventListener("click", patch_entry);
         }
 
         async function update_entries() {
@@ -68,6 +69,22 @@
             }
         }
 
+        async function patch_entry() {
+            const bucket_name = document.querySelector("#bucket_name").value;
+            const key = document.querySelector("#key").value;
+            const value = document.querySelector("#value").value;
+            try {
+                await fetch(`store/v1/bucket/${bucket_name}/entry/${key}`, {
+                    method: "PATCH",
+                    headers: new Headers({'Content-Type': 'application/json-patch+json'}),
+                    body: value});
+                await update_entries();
+            }
+            catch (err) {
+                console.log(err);
+            }
+        }
+
         async function remove_entry(key) {
             const bucket_name = document.querySelector("#bucket_name").value;
 
@@ -88,7 +105,7 @@
         <label>Bucket: </label><input type="text" id="bucket_name"/>
     </p>
 
-    <h2>Add / Change Entry</h2>
+    <h2>Add, Change or Patch Entry</h2>
     <table>
         <tr>
             <td>Key:</td>
@@ -96,11 +113,14 @@
         </tr>
         <tr>
             <td>Value:</td>
-            <td><input type="text" id="value" value="value"/></td>
+            <td><textarea id="value"></textarea></td>
         </tr>
         <tr>
             <td></td>
-            <td><input type="button" id="set_value" value="Submit"/></td>
+            <td>
+                <input type="button" id="patch_value" value="Patch"/>
+                <input type="button" id="set_value" value="Submit"/>
+            </td>
         </tr>
     </table>
     

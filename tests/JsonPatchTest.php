@@ -69,6 +69,16 @@ final class JsonPatchTest extends TestCase
         $this->assertSame("true", $result);
     }
 
+    public function testAddToEmptyObject() {
+        $value = "{}";
+        $patch = "[{\"op\": \"add\", \"path\": \"/a\", \"value\": 42}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("{\"a\":42}", $result);
+    }
+
+
     public function testAddKey() {
         $value = "{\"a\": {\"foo\": 1}}";
         $patch = "[{\"op\": \"add\", \"path\": \"/a/b\", \"value\": 2}]";

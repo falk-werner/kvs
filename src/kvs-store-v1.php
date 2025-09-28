@@ -143,6 +143,66 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
                 kvs_header($allowed_origin);
             }
             break;
+        case 'PATCH':
+            $fp = fopen(sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'kvs-store.lock', 'a+');
+            if (!$fp) {
+                error_log("failed to open lock file");
+                http_response_code(500);                
+                kvs_header($allowed_origin);
+                return;
+            }
+
+            if (!flock($fp, LOCK_EX)) {
+                error_log("failed to aquire lock");
+                http_response_code(500);                
+                kvs_header($allowed_origin);
+                fclose($fp);
+                return;
+            }
+
+            $patch = kvs_read_value(10240);
+            if ($patch === false) {
+                error_log("missing content");
+                http_response_code(400);                
+                kvs_header($allowed_origin);
+                flock($fp, LOCK_UN);
+                fclose($fp);
+                return;
+            }
+
+            $value = kvs_entry_get_value($conn, $bucket->id, $key);
+            error_log("value: $value");
+            [$value, $err] = kvs_json_patch($value, $patch);
+            error_log("value after patch: $value");
+            if ($err !== false) {
+                error_log("failed to patch");
+                http_response_code(400);
+                header('Content-Type: text/plain');
+                kvs_header($allowed_origin);
+                echo $err;
+                flock($fp, LOCK_UN);
+                fclose($fp);
+                return;
+            }
+
+            $entry_id = kvs_entry_get_id($conn, $bucket->id, $key);
+            $success = kvs_entry_update($conn, $entry_id, $value);
+            if (!$success) {
+                http_response_code(500);
+                kvs_header($allowed_origin);
+                flock($fp, LOCK_UN);
+                fclose($fp);
+                return;
+            }
+
+            http_response_code(200);
+            header('Content-Type: application/json');
+            kvs_header($allowed_origin);
+            echo $value;
+
+            flock($fp, LOCK_UN);
+            fclose($fp);
+            break;
         case 'DELETE':
             kvs_entry_remove($conn, $bucket->id, $key);
             http_response_code(204);

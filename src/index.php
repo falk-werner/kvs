@@ -12,6 +12,7 @@ if (!defined('KEYVALUESTORE_CONFIG_VALID'))
 require_once('kvs-http.php');
 require_once('kvs-bucket.php');
 require_once('kvs-db.php');
+require_once('kvs-json-patch.php');
 require_once('kvs-store-v1.php');
 require_once('kvs-admin-v1.php');
 

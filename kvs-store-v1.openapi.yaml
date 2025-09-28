@@ -56,6 +56,22 @@ paths:
           text/plain:
             schema:
               type: string
+    patch:
+      summary: Patches the value of the entry. Entry must be json.
+      parameters:
+        - name: bucket
+          in: path
+          description: ID of the bucket
+          required: true
+        - name: key
+          in: path
+          description: ID of the key
+          required: true
+      requestBody:
+        content:
+          application/json-patch+json:
+            schema:
+              type: string
     delete:
       summary: Removes the entry from the bucket
       parameters:

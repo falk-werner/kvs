@@ -60,6 +60,15 @@ final class JsonPatchTest extends TestCase
         $this->assertSame(null, $result);
     }
 
+    public function testAddFailsWithMissingValue() {
+        $value = "{}";
+        $patch = "[{\"op\": \"add\", \"path\": \"/\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertNotFalse($err);
+        $this->assertSame(null, $result);
+    }
+
     public function testAddReplaceWholeObject() {
         $value = "{}";
         $patch = "[{\"op\": \"add\", \"path\": \"/\", \"value\": true}]";
@@ -79,13 +88,40 @@ final class JsonPatchTest extends TestCase
     }
 
 
-    public function testAddKey() {
+    public function testAddKeyToObject() {
         $value = "{\"a\": {\"foo\": 1}}";
         $patch = "[{\"op\": \"add\", \"path\": \"/a/b\", \"value\": 2}]";
 
         [$result, $err] = kvs_json_patch($value, $patch);
         $this->assertFalse($err);
         $this->assertSame("{\"a\":{\"foo\":1,\"b\":2}}", $result);
+    }
+
+    public function testAddReplacesArrayItemAtFront() {
+        $value = "[\"apple\"]";
+        $patch = "[{\"op\": \"add\", \"path\": \"/0\", \"value\": \"orange\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("[\"orange\"]", $result);
+    }
+
+    public function testAddReplacesArrayItemAtSpecificIndex() {
+        $value = "[\"apple\", \"orange\", \"banana\"]";
+        $patch = "[{\"op\": \"add\", \"path\": \"/1\", \"value\": \"pepper\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("[\"apple\",\"pepper\",\"banana\"]", $result);
+    }
+
+    public function testAddNewArrayItem() {
+        $value = "[\"apple\"]";
+        $patch = "[{\"op\": \"add\", \"path\": \"/-\", \"value\": \"orange\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("[\"apple\",\"orange\"]", $result);
     }
 
     public function testAddFailWhenPathNotExists() {
@@ -98,6 +134,15 @@ final class JsonPatchTest extends TestCase
     }
 
     public function testRemoveKeyFromObject() {
+        $value = "[\"apple\", \"orange\", \"banana\"]";
+        $patch = "[{\"op\": \"remove\", \"path\": \"/1\"}]";
+
+        [$result, $err] = kvs_json_patch($value, $patch);
+        $this->assertFalse($err);
+        $this->assertSame("[\"apple\",\"banana\"]", $result);
+    }
+
+    public function testRemoveItemFromArray() {
         $value = "{\"a\": 1, \"b\": 2}";
         $patch = "[{\"op\": \"remove\", \"path\": \"/a\"}]";
 
@@ -105,7 +150,6 @@ final class JsonPatchTest extends TestCase
         $this->assertFalse($err);
         $this->assertSame("{\"b\":2}", $result);
     }
-
 
     public function testReplace() {
         $value = "{\"a\": 1}";

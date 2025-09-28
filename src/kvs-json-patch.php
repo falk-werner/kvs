@@ -60,7 +60,13 @@ function kvs_json_patch_add($target, $entry) {
         $temp = &$target[$item];
     }
 
-    $temp[$top] = $value;
+    if (($top == "-") && (array_is_list($temp))) {
+        array_push($temp, $value);
+    }
+    else {
+        $temp[$top] = $value;
+    }
+
     return [$target, false];
 }
 
@@ -93,7 +99,12 @@ function kvs_json_patch_remove($target, $entry) {
         return [null, "key not exists"];
     }
 
-    unset($temp[$top]);
+    if (array_is_list($temp)) {
+        array_splice($temp, $top, 1);
+    }
+    else {
+        unset($temp[$top]);
+    }
 
     return [$target, false];
 }

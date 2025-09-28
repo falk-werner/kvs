@@ -1,9 +1,20 @@
 # Key Value Store
 
+Simple key value store implemented in PHP.
+
+## Features
+
+- simple API
+- cross origin
+- [JSON-Patch](https://datatracker.ietf.org/doc/html/rfc6902)
+- multi tenant _(by different buckets)_
+
+
 ## API
 
 - [Store API (v1)](kvs-store-v1.openapi.yaml)
 - [Admin API (v1)](kvs-admin-v1.openapi.yaml)
+
 
 ## Run locally
 
@@ -21,3 +32,4 @@ You also need a database available.
 ## Reference
 
 - [Base64Url](https://datatracker.ietf.org/doc/html/rfc4648#section-5)
+- [JSON Patch](https://datatracker.ietf.org/doc/html/rfc6902)

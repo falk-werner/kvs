@@ -47,6 +47,14 @@ function kvs_store_v1_process_bucket($bucket_name) {
             http_response_code(200);
             kvs_header($allowed_origin);
             break;
+        case 'OPTIONS':
+            http_response_code(204);
+            header('Content-Type:');
+            header('Content-Length:');
+            kvs_header($allowed_origin);
+            header('Access-Control-Allow-Methods: *');
+            header('Access-Control-Allow-Headers: *');
+            break;
         default:
             http_response_code(405);
             kvs_header($allowed_origin);
@@ -76,6 +84,14 @@ function kvs_store_v1_process_keys($bucket_name) {
             header('Content-Type: application/json');
             kvs_header($allowed_origin);
             echo json_encode($names);
+            break;
+        case 'OPTIONS':
+            http_response_code(204);
+            header('Content-Type:');
+            header('Content-Length:');
+            kvs_header($allowed_origin);
+            header('Access-Control-Allow-Methods: GET');
+            header('Access-Control-Allow-Headers: *');
             break;
         default:
             http_response_code(405);
@@ -207,6 +223,14 @@ function kvs_store_v1_process_entry($bucket_name, $key) {
             kvs_entry_remove($conn, $bucket->id, $key);
             http_response_code(204);
             kvs_header($allowed_origin);
+            break;
+        case 'OPTIONS':
+            http_response_code(204);
+            header('Content-Type:');
+            header('Content-Length:');
+            kvs_header($allowed_origin);
+            header('Access-Control-Allow-Methods: *');
+            header('Access-Control-Allow-Headers: *');
             break;
         default:
             http_response_code(405);

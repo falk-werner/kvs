@@ -1,3 +1,5 @@
+[![Test](https://github.com/falk-werner/kvs/actions/workflows/test.yaml/badge.svg)](https://github.com/falk-werner/kvs/actions/workflows/test.yaml)
+
 # Key Value Store
 
 Simple key value store implemented in PHP.
